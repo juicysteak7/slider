@@ -40,27 +40,80 @@ fn is_solvable(board: &Vec<Vec<u8>>) -> bool {
     inversions % 2 == 0 // Check if the number of inversions is even (solvable)
 }
 
-fn make_random_move(board: &Vec<Vec<u8>>) -> Option<Vec<Vec<u8>>> {
+fn make_random_moves(board: &Vec<Vec<u8>>) -> Vec<Vec<u8>> {
     let mut rng = rand::thread_rng();
-    let random_number = rng.gen_range(0..=3);
+    let mut this_board = board.clone();
+    let mut last_move:u8 = 0;
+    let mut failed_move: bool = false;
+    let mut moves:u64 = 0;
+    while !is_solved(&this_board) {
 
-    let mut result = match random_number {
-        0 => make_move(&board,"up"),
-        1 => make_move(&board,"down"),
-        2 => make_move(&board,"left"),
-        3 => make_move(&board,"right"),
-        _ => None,
-    };
-
-    result = match result {
-        Some(new_board) => {
-            Some(new_board)
-        },
-        None => {
-            make_random_move(board)
+        //Generate random move
+        let mut random_number:u8 = rng.gen_range(0..=3);
+        //Check if last move failed and generate a new move
+        while failed_move == true && last_move == random_number {
+            random_number = rng.gen_range(0..=3);
         }
-    };
-    result
+
+        this_board = match random_number {
+            0 => {
+                match make_move(&this_board, "up") {
+                    Some(board) => {
+                        failed_move = false;
+                        board
+                    }
+                    None => {
+                        last_move = 0;
+                        failed_move = true;
+                        this_board
+                    }
+                }
+            },
+            1 => {
+                match make_move(&this_board, "down") {
+                    Some(board) => {
+                        failed_move = false;
+                        board
+                    }
+                    None => {
+                        failed_move = true;
+                        last_move = 1;
+                        this_board
+                    }
+                }
+            },
+            2 => {
+                match make_move(&this_board, "left") {
+                    Some(board) => {
+                        failed_move = false;
+                        board
+                    }
+                    None => {
+                        failed_move = true;
+                        last_move = 2;
+                        this_board
+                    }
+                }
+            },
+            3 => {
+                match make_move(&this_board, "right") {
+                    Some(board) => {
+                        failed_move = false;
+                        board
+                    }
+                    None => {
+                        failed_move = true;
+                        last_move = 3;
+                        this_board
+                    }
+                }
+            },
+            _ => this_board,
+        };
+        moves += 1;
+    }
+    println!("Total moves made: {}", moves);
+    this_board
 }
 
 fn make_move(board: &Vec<Vec<u8>>, direction: &str) -> Option<Vec<Vec<u8>>> {
@@ -124,18 +177,8 @@ fn main() {
     while !is_solvable(&random_board) {
         random_board = generate_random_board(size);
     }
-
     print_board(&random_board);
-    while !is_solved(&random_board) {
-        match make_random_move(&random_board) {
-            Some(new_board) => {
-                random_board = new_board
-            }
-            None => {
-                println!("Caught an invalid move");
-            }
-        }
-    }
+    random_board = make_random_moves(&random_board);
     print_board(&random_board);
 }
 
