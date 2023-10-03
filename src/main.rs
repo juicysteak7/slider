@@ -125,14 +125,22 @@ fn main() {
         random_board = generate_random_board(size);
     }
 
-    if is_solved(&random_board) {
-        println!("The initial board is correct.")
-    } else {
-        println!("The inital board is incorrect.")
+    print_board(&random_board);
+    while !is_solved(&random_board) {
+        match make_random_move(&random_board) {
+            Some(new_board) => {
+                random_board = new_board
+            }
+            None => {
+                println!("Caught an invalid move");
+            }
+        }
     }
+    print_board(&random_board);
+}
 
-    // Print the random board
-    for row in &random_board {
+fn print_board(board: &Vec<Vec<u8>>) {
+    for row in board{
         println!("{:?}", row);
     }
 }
